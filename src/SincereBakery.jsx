@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 // ─── CONFIG ───
-const OWNER_WHATSAPP = "919319342574"; // <-- APNA WHATSAPP NUMBER DAAL (country code ke saath, no +)
+const OWNER_WHATSAPP = "919999999999"; // <-- APNA WHATSAPP NUMBER DAAL (country code ke saath, no +)
 
 const FONTS_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
@@ -673,15 +673,7 @@ function CheckoutPage({ cart, onBack, onOrderPlaced }) {
       }
     } catch (err) {
       console.error("Order API error:", err);
-      // Don't block — still send WhatsApp as backup
     }
-
-    // ─── Also send WhatsApp notification ───
-    const orderItems = cart.map((item) => `• ${item.name} × ${item.qty} = ₹${item.price * item.qty}`).join("\n");
-    const orderTime = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
-    const message = `🧁 *NEW ORDER — SINCERE BAKERY*\n\n📋 *Order ID:* ${orderId}\n🕐 *Time:* ${orderTime}\n\n*━━━ Items ━━━*\n${orderItems}\n\n*━━━ Bill ━━━*\nSubtotal: ₹${total}\nDelivery: ${deliveryFee === 0 ? "FREE 🎉" : `₹${deliveryFee}`}\n*TOTAL: ₹${grandTotal}*\n\n*━━━ Customer ━━━*\n👤 *Name:* ${form.name}\n📞 *Phone:* ${form.phone}\n\n*━━━ Delivery Address ━━━*\n📍 ${form.address}\n${form.landmark ? `🏠 Landmark: ${form.landmark}` : ""}\n📮 Pincode: ${form.pincode}\n\n*━━━ Payment ━━━*\n💳 ${form.payment === "cod" ? "Cash on Delivery" : `UPI (${form.upiId})`}`;
-    const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
 
     setPlacing(false);
     onOrderPlaced(orderId);
