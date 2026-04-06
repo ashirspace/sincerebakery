@@ -640,15 +640,51 @@ function CheckoutPage({ cart, onBack, onOrderPlaced }) {
     return Object.keys(err).length === 0;
   };
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (!validate()) return;
     setPlacing(true);
+
+    const orderId = "SB" + Date.now().toString().slice(-6);
+
+    try {
+      // ─── Save to Airtable via API + Send Email ───
+      const apiRes = await fetch("/api/place-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          customerName: form.name,
+          phone: form.phone,
+          address: form.address,
+          landmark: form.landmark,
+          pincode: form.pincode,
+          items: cart.map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
+          total,
+          deliveryFee,
+          grandTotal,
+          payment: form.payment,
+          upiId: form.upiId,
+        }),
+      });
+
+      if (!apiRes.ok) {
+        const errData = await apiRes.json();
+        console.error("API error:", errData);
+      }
+    } catch (err) {
+      console.error("Order API error:", err);
+      // Don't block — still send WhatsApp as backup
+    }
+
+    // ─── Also send WhatsApp notification ───
     const orderItems = cart.map((item) => `• ${item.name} × ${item.qty} = ₹${item.price * item.qty}`).join("\n");
     const orderTime = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
-    const orderId = "SB" + Date.now().toString().slice(-6);
     const message = `🧁 *NEW ORDER — SINCERE BAKERY*\n\n📋 *Order ID:* ${orderId}\n🕐 *Time:* ${orderTime}\n\n*━━━ Items ━━━*\n${orderItems}\n\n*━━━ Bill ━━━*\nSubtotal: ₹${total}\nDelivery: ${deliveryFee === 0 ? "FREE 🎉" : `₹${deliveryFee}`}\n*TOTAL: ₹${grandTotal}*\n\n*━━━ Customer ━━━*\n👤 *Name:* ${form.name}\n📞 *Phone:* ${form.phone}\n\n*━━━ Delivery Address ━━━*\n📍 ${form.address}\n${form.landmark ? `🏠 Landmark: ${form.landmark}` : ""}\n📮 Pincode: ${form.pincode}\n\n*━━━ Payment ━━━*\n💳 ${form.payment === "cod" ? "Cash on Delivery" : `UPI (${form.upiId})`}`;
     const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(message)}`;
-    setTimeout(() => { window.open(whatsappUrl, "_blank"); setPlacing(false); onOrderPlaced(orderId); }, 1500);
+    window.open(whatsappUrl, "_blank");
+
+    setPlacing(false);
+    onOrderPlaced(orderId);
   };
 
   const inputStyle = (field) => ({ width: "100%", padding: "14px 20px", borderRadius: "var(--radius-sm)", border: `1.5px solid ${errors[field] ? "#e74c3c" : "rgba(200,149,108,0.2)"}`, background: "var(--cream)", fontSize: 15, color: "var(--text-primary)", outline: "none", fontFamily: "'DM Sans', sans-serif", transition: "border-color 0.3s" });
@@ -754,7 +790,7 @@ function CheckoutPage({ cart, onBack, onOrderPlaced }) {
                 </div>
               </div>
               <button onClick={placeOrder} disabled={placing} style={{ width: "100%", padding: 16, borderRadius: 100, border: "none", fontSize: 16, fontWeight: 600, color: "#fff", background: placing ? "var(--text-light)" : "linear-gradient(135deg, var(--caramel), var(--chocolate))", boxShadow: placing ? "none" : "0 6px 25px rgba(200,149,108,0.35)", cursor: placing ? "wait" : "pointer", fontFamily: "'DM Sans', sans-serif", marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-                {placing ? "⏳ Placing Order..." : "Place Order via WhatsApp 💬"}
+                {placing ? "⏳ Placing Order..." : "Place Order 🛒"}
               </button>
               <p style={{ fontSize: 11, color: "var(--text-light)", textAlign: "center", marginTop: 12, lineHeight: 1.5 }}>Order details will be sent via WhatsApp. You'll receive confirmation shortly!</p>
             </div>
