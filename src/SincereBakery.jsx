@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 // ─── CONFIG ───
-const OWNER_WHATSAPP = "919999999999"; // <-- APNA WHATSAPP NUMBER DAAL (country code ke saath, no +)
+const OWNER_WHATSAPP = "919319342574"; // <-- APNA WHATSAPP NUMBER DAAL (country code ke saath, no +)
 
 const FONTS_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
